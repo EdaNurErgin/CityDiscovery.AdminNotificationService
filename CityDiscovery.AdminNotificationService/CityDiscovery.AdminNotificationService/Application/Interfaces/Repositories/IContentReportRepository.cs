@@ -9,6 +9,12 @@ namespace CityDiscovery.AdminNotificationService.Application.Interfaces.Reposito
         Task UpdateAsync(ContentReport report, CancellationToken cancellationToken = default);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<int> GetOpenCountAsync(CancellationToken cancellationToken = default);
+        // Mevcut kodların altına şu metodu ekleyin:
+        Task<(List<ContentReport> Items, int TotalCount)> GetPagedAsync(
+            int page,
+            int pageSize,
+            string? status, // Opsiyonel: 'Open', 'Resolved' vs. filtrelemek için
+            CancellationToken cancellationToken = default);
 
     }
 }

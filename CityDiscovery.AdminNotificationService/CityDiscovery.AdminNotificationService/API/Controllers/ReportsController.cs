@@ -1,7 +1,12 @@
-﻿using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Commands.CreateReport;
+﻿using CityDiscovery.AdminNotificationService.Application.Common.Models;
+using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Commands.CreateReport;
 using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Commands.ResolveReport;
+using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.DTOs;
+using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Queries.GetContentReports;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using CityDiscovery.AdminNotificationService.API.Models.Requests;
+
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
@@ -46,10 +51,24 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return NoContent();
         }
 
-        public class ResolveReportRequest
+        // GET api/reports?page=1&pageSize=10&status=Open
+        [HttpGet]
+        public async Task<ActionResult<PagedResult<ContentReportDto>>> GetReports(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? status = null,
+            CancellationToken cancellationToken = default)
         {
-            public Guid AdminUserId { get; set; }
-            public string NewStatus { get; set; } = default!; // "Resolved" veya "Rejected"
+            var query = new GetContentReportsQuery
+            {
+                Page = page,
+                PageSize = pageSize,
+                Status = status
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
         }
+
     }
 }

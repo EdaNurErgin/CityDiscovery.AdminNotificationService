@@ -2,6 +2,7 @@
 using CityDiscovery.AdminNotificationService.Application.Features.AdminDashboard.Queries.GetAdminDashboardSummary;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using CityDiscovery.AdminNotificationService.API.Models.Requests;
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {

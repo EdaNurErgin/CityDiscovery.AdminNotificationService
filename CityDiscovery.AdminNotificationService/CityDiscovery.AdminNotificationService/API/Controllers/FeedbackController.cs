@@ -4,6 +4,7 @@ using CityDiscovery.AdminNotificationService.Application.Features.UserFeedbacks.
 using CityDiscovery.AdminNotificationService.Application.Features.UserFeedbacks.Queries.GetUserFeedback;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using CityDiscovery.AdminNotificationService.API.Models.Requests;
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
@@ -67,10 +68,6 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return NoContent();
         }
 
-        public class UpdateStatusRequest
-        {
-            public Guid AdminUserId { get; set; }
-            public string NewStatus { get; set; } = default!;
-        }
+
     }
 }

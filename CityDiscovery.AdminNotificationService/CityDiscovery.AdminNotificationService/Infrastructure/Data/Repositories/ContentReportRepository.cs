@@ -42,5 +42,31 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositorie
                 .Where(r => r.Status == "Open")
                 .CountAsync(cancellationToken);
         }
+
+        // Sınıfın içine ekleyin:
+        public async Task<(List<ContentReport> Items, int TotalCount)> GetPagedAsync(
+            int page,
+            int pageSize,
+            string? status,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.ContentReports.AsQueryable();
+
+            // Eğer status parametresi doluysa filtrele
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(r => r.Status == status);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(r => r.CreatedAt) // En yeniden eskiye
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
+        }
     }
 }

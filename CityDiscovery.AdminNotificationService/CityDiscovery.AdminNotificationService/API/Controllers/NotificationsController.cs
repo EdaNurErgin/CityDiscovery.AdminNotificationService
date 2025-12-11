@@ -6,6 +6,8 @@ using CityDiscovery.AdminNotificationService.Application.Features.Notifications.
 using CityDiscovery.AdminNotificationService.Application.Features.Notifications.Queries.GetUserNotifications;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using CityDiscovery.AdminNotificationService.API.Models.Requests;
+
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
@@ -87,14 +89,6 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return NoContent();
         }
 
-        public class MarkReadRequest
-        {
-            public Guid UserId { get; set; }
-        }
 
-        public class MarkAllReadRequest
-        {
-            public Guid UserId { get; set; }
-        }
     }
 }
