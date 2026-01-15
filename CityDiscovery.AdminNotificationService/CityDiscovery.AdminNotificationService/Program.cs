@@ -1,4 +1,4 @@
-
+﻿
 using CityDiscovery.AdminNotificationService.Application;
 using CityDiscovery.AdminNotificationService.Application.DependencyInjection;
 using CityDiscovery.AdminNotificationService.Infrastructure;
@@ -29,7 +29,7 @@ namespace CityDiscovery.AdminNotificationService
                     Scheme = "Bearer",              
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "L�tfen sadece JWT token'?n?z? yap??t?r?n. (Bearer yazman?za GEREK YOK)"
+                    Description = "Lütfen sadece JWT token'?n?z? yap??t?r?n. (Bearer yazman?za GEREK YOK)"
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -52,6 +52,9 @@ namespace CityDiscovery.AdminNotificationService
                 .AddAdminNotificationApplication(builder.Configuration)
                 .AddAdminNotificationInfrastructure(builder.Configuration);
 
+            // Health Checks
+            builder.Services.AddHealthChecks();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -66,9 +69,13 @@ namespace CityDiscovery.AdminNotificationService
             app.UseAuthorization();
 
 
+            // Health Check Endpoint
+            app.MapHealthChecks("/health");
+
             app.MapControllers();
 
             app.Run();
         }
     }
 }
+
