@@ -1,9 +1,8 @@
-﻿
-using CityDiscovery.AdminNotificationService.Application;
+using System.Reflection;
 using CityDiscovery.AdminNotificationService.Application.DependencyInjection;
-using CityDiscovery.AdminNotificationService.Infrastructure;
 using CityDiscovery.AdminNotificationService.Infrastructure.DependencyInjection;
 using Microsoft.OpenApi.Models;
+
 namespace CityDiscovery.AdminNotificationService
 {
     public class Program
@@ -12,21 +11,34 @@ namespace CityDiscovery.AdminNotificationService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-          
-
             builder.Services.AddControllers();
-          
             builder.Services.AddEndpointsApiExplorer();
+
+            // Swagger Dok�mantasyon Ayarlar?
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "CityDiscovery.AdminNotificationService", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "CityDiscovery Admin & Notification API",
+                    Version = "v1",
+                    Description = "Bu API; kullan?c? bildirimleri, sistem geri bildirimleri (Feedback) ve i�erik raporlama (Reporting) s�re�lerini y�netir. \n\n" +
+                                  "**Not:** T�m PUT/POST i?lemlerinde JSON g�vdesi beklenmektedir."
+                });
 
-                
+                // Kod i�indeki /// <summary> yorumlar?n? Swagger'a aktar?r
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
+
+                // JWT G�venlik Tan?m?
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http, 
-                    Scheme = "Bearer",              
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
                     Description = "Lütfen sadece JWT token'?n?z? yap??t?r?n. (Bearer yazman?za GEREK YOK)"
@@ -37,13 +49,9 @@ namespace CityDiscovery.AdminNotificationService
                     {
                         new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
                         },
-                        new string[] {}
+                        Array.Empty<string>()
                     }
                 });
             });
@@ -57,11 +65,15 @@ namespace CityDiscovery.AdminNotificationService
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Admin Notification API V1");
+                    c.DocumentTitle = "CityDiscovery Frontend API Guide";
+                    c.DefaultModelsExpandDepth(-1); // Model ?emalar?n? varsay?lan olarak kapal? tutar, kalabal??? �nler
+                });
             }
 
             app.UseHttpsRedirection();
@@ -69,13 +81,8 @@ namespace CityDiscovery.AdminNotificationService
             app.UseAuthorization();
 
 
-            // Health Check Endpoint
-            app.MapHealthChecks("/health");
-
             app.MapControllers();
-
             app.Run();
         }
     }
 }
-
