@@ -22,7 +22,18 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             _mediator = mediator;
         }
 
-        // GET api/notifications?userId=...&page=1&pageSize=20&unreadOnly=true
+        /// <summary>(User-0)
+        /// Kullanıcının bildirim listesini getirir.
+        /// </summary>
+        /// <remarks>
+        /// Örnek: GET /api/notifications?userId=...&amp;page=1&amp;pageSize=20
+        /// </remarks>
+        /// <param name="userId">Bildirimleri getirilecek kullanıcının benzersiz ID'si</param>
+        /// <param name="page">Sayfa numarası (Varsayılan: 1)</param>
+        /// <param name="pageSize">Sayfadaki kayıt sayısı (Varsayılan: 20)</param>
+        /// <param name="unreadOnly">Sadece okunmamışları getirmek için true gönderin</param>
+
+        [ProducesResponseType(typeof(PagedResult<NotificationDto>), StatusCodes.Status200OK)]
         [HttpGet]
         public async Task<ActionResult<PagedResult<NotificationDto>>> GetUserNotifications(
             [FromQuery] Guid userId,
@@ -47,6 +58,9 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // GET api/notifications/unread-count?userId=...
+        /// <summary>(User-0)
+        /// Kullanıcının toplam okunmamış bildirim sayısını döner.
+        /// </summary>
         [HttpGet("unread-count")]
         public async Task<ActionResult<int>> GetUnreadCount(
             [FromQuery] Guid userId,
@@ -58,6 +72,11 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // PUT api/notifications/{id}/read
+        /// <summary>(User-0)
+        /// Belirli bir bildirimi okundu olarak işaretler.
+        /// </summary>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("{id:guid}/read")]
         public async Task<IActionResult> MarkAsRead(
             Guid id,
@@ -75,6 +94,9 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // PUT api/notifications/read-all
+        /// <summary>(User-0)
+        /// Kullanıcının tüm bildirimlerini tek seferde 'okundu' olarak işaretler.
+        /// </summary>
         [HttpPut("read-all")]
         public async Task<IActionResult> MarkAllAsRead(
             [FromBody] MarkAllReadRequest request,

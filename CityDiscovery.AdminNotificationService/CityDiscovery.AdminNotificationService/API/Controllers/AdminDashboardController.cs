@@ -6,6 +6,7 @@ using CityDiscovery.AdminNotificationService.API.Models.Requests;
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
+
     [ApiController]
     [Route("api/admin/dashboard")]
     public class AdminDashboardController : ControllerBase
@@ -17,6 +18,11 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             _mediator = mediator;
         }
 
+        /// <summary>
+        /// Admin panelindeki özet sayıları (Toplam Feedback, Açık Raporlar, Okunmamış Bildirimler) döner.
+        /// </summary>
+        /// <param name="adminUserId">İşlemi yapan adminin kullanıcı ID'si.</param>
+        /// <returns>AdminDashboardSummaryDto objesi döner.</returns>
         // GET api/admin/dashboard?adminUserId=...
         [HttpGet]
         public async Task<ActionResult<AdminDashboardSummaryDto>> GetDashboard(

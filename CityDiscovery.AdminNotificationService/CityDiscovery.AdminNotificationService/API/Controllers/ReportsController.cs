@@ -10,6 +10,7 @@ using CityDiscovery.AdminNotificationService.API.Models.Requests;
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
+    
     [ApiController]
     [Route("api/[controller]")]
     public class ReportsController : ControllerBase
@@ -22,6 +23,12 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // POST api/reports
+        /// <summary>(admin)
+        /// Bir içeriği (Post, Comment, Venue vb.) raporlar/şikayet eder.
+        /// </summary>
+        /// <remarks>
+        /// ReportedType: 'Post', 'Comment', 'Photo', 'Venue', 'Review'.
+        /// </remarks>
         [HttpPost]
         public async Task<IActionResult> CreateReport(
             [FromBody] CreateReportCommand command,
@@ -34,6 +41,12 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // PUT api/reports/{id}/resolve
+        /// <summary>(admin)
+        /// Admin Paneli: Raporu sonuçlandırır (Onayla veya Reddet).
+        /// </summary>
+        /// <remarks>
+        /// NewStatus: 'Resolved' (İçerik kaldırıldı/onaylandı) veya 'Rejected' (Şikayet reddedildi).
+        /// </remarks>
         [HttpPut("{id:guid}/resolve")]
         public async Task<IActionResult> ResolveReport(
             Guid id,
@@ -52,6 +65,10 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // GET api/reports?page=1&pageSize=10&status=Open
+        /// <summary>(admin)
+        /// Admin Paneli: Tüm raporları sayfalı ve filtreli olarak listeler.
+        /// </summary>
+        /// <param name="status">Opsiyonel filtre: 'Open', 'Resolved', 'Rejected'.</param>
         [HttpGet]
         public async Task<ActionResult<PagedResult<ContentReportDto>>> GetReports(
             [FromQuery] int page = 1,

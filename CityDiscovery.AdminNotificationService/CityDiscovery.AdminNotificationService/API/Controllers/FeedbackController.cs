@@ -20,6 +20,12 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // POST api/feedback
+        /// <summary>
+        /// Yeni bir geri bildirim (Hata, Öneri, Şikayet vb.) oluşturur.
+        /// </summary>
+        /// <remarks>
+        /// Type alanına şunlar yazılabilir: 'Feedback', 'Complaint', 'Suggestion', 'Bug'.
+        /// </remarks>
         [HttpPost]
         public async Task<IActionResult> CreateFeedback(
             [FromBody] CreateFeedbackCommand command,
@@ -30,7 +36,9 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return CreatedAtAction(nameof(GetUserFeedback), new { userId = result.UserId }, result);
         }
 
-        // GET api/feedback/user/{userId}
+        /// <summary>
+        /// Bir kullanıcının geçmişte gönderdiği tüm geri bildirimleri listeler.
+        /// </summary>
         [HttpGet("user/{userId:guid}")]
         public async Task<IActionResult> GetUserFeedback(
             Guid userId,
@@ -41,7 +49,9 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return Ok(result);
         }
 
-        // GET api/feedback/open   (Admin paneli için)
+        /// <summary>
+        /// Admin Paneli: Henüz çözümlenmemiş (Open veya InProgress) geri bildirimleri getirir.
+        /// </summary>
         [HttpGet("open")]
         public async Task<IActionResult> GetOpenFeedback(CancellationToken cancellationToken)
         {
@@ -51,6 +61,12 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         }
 
         // PUT api/feedback/{id}/status
+        /// <summary>
+        /// Admin Paneli: Geri bildirimin durumunu günceller.
+        /// </summary>
+        /// <remarks>
+        /// NewStatus alanına şunlar yazılabilir: 'Open', 'InProgress', 'Resolved', 'Closed'.
+        /// </remarks>
         [HttpPut("{id:guid}/status")]
         public async Task<IActionResult> UpdateStatus(
             Guid id,
