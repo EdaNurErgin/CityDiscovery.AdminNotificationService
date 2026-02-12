@@ -1,7 +1,7 @@
 ﻿using System;
 
 // DİKKAT: SocialService'deki namespace ile birebir aynı olmalı
-namespace SocialService.Shared.Common.Events.Social
+namespace CityDiscovery.SocialService.SocialServiceShared.Common.Events.Social
 {
     public class PostLikedEvent
     {

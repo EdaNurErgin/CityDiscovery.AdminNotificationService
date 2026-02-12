@@ -1,7 +1,7 @@
 ﻿using CityDiscovery.AdminNotificationService.Application.Interfaces.External;
 using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
 using CityDiscovery.AdminNotificationService.Domain.Entities;
-using CityDiscovery.AdminNotificationService.Shared.Common.Events.Venue;
+using CityDiscovery.VenueService.VenuesService.Shared.Common.Events.Venue;
 using MassTransit;
 using System.Text.Json;
 

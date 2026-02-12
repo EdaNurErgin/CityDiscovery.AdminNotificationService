@@ -1,4 +1,4 @@
-﻿namespace CityDiscovery.AdminNotificationService.Shared.Common.Events.Review
+﻿namespace CityDiscovery.ReviewService.ReviewService.Shared.Events.Review
 {
     public class ReviewDeletedEvent
     {

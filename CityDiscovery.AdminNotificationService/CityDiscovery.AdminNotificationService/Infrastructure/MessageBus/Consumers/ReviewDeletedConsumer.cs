@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
-using CityDiscovery.AdminNotificationService.Shared.Common.Events.Review;
+using CityDiscovery.ReviewService.ReviewService.Shared.Events.Review;
 
 namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consumers
 {

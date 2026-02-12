@@ -1,4 +1,4 @@
-﻿namespace CityDiscovery.AdminNotificationService.Shared.Common.Events.Venue
+﻿namespace CityDiscovery.VenueService.VenuesService.Shared.Common.Events.Venue
 {
     public class VenueCreatedEvent
     {

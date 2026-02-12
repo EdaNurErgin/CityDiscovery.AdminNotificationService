@@ -2,7 +2,7 @@
 using CityDiscovery.AdminNotificationService.Domain.Entities;
 using MassTransit;
 // ReviewService namespace'i
-using CityDiscovery.ReviewService.Shared.Events;
+using CityDiscovery.ReviewService.ReviewService.Shared.Events.Review;
 
 namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consumers
 {

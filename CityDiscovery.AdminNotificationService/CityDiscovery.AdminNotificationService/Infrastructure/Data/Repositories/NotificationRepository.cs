@@ -71,6 +71,7 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositorie
                 notification.IsRead = true;
                 notification.ReadAt = DateTime.UtcNow;
                 _context.Notifications.Update(notification);
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 
@@ -91,6 +92,7 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositorie
             }
 
             _context.Notifications.UpdateRange(notifications);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task AddRangeAsync(IEnumerable<Notification> notifications)

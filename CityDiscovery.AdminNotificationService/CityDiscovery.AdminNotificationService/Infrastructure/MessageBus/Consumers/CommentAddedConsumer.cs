@@ -2,7 +2,7 @@
 using System.Text.Json;
 using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
 using CityDiscovery.AdminNotificationService.Domain.Entities;
-using CityDiscovery.AdminNotificationService.Shared.Common.Events.Social;
+using CityDiscovery.SocialService.SocialServiceShared.Common.Events.Social;
 
 namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consumers
 {

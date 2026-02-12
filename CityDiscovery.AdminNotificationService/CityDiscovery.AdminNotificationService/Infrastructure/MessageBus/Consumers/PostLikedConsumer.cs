@@ -1,8 +1,9 @@
 ﻿using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
 using CityDiscovery.AdminNotificationService.Domain.Entities;
+using CityDiscovery.SocialService.SocialServiceShared.Common.Events.Social;
 using MassTransit;
 // Yukarıda tanımladığımız namespace'i ekliyoruz
-using SocialService.Shared.Common.Events.Social;
+
 
 namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consumers
 {
