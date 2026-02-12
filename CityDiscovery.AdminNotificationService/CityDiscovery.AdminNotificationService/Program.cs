@@ -14,18 +14,18 @@ namespace CityDiscovery.AdminNotificationService
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
-            // Swagger Dokümantasyon Ayarlar?
+            // Swagger Dokï¿½mantasyon Ayarlar?
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "CityDiscovery Admin & Notification API",
                     Version = "v1",
-                    Description = "Bu API; kullan?c? bildirimleri, sistem geri bildirimleri (Feedback) ve içerik raporlama (Reporting) süreçlerini yönetir. \n\n" +
-                                  "**Not:** Tüm PUT/POST i?lemlerinde JSON gövdesi beklenmektedir."
+                    Description = "Bu API; kullan?c? bildirimleri, sistem geri bildirimleri (Feedback) ve iï¿½erik raporlama (Reporting) sï¿½reï¿½lerini yï¿½netir. \n\n" +
+                                  "**Not:** Tï¿½m PUT/POST i?lemlerinde JSON gï¿½vdesi beklenmektedir."
                 });
 
-                // Kod içindeki /// <summary> yorumlar?n? Swagger'a aktar?r
+                // Kod iï¿½indeki /// <summary> yorumlar?n? Swagger'a aktar?r
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
@@ -33,7 +33,7 @@ namespace CityDiscovery.AdminNotificationService
                     c.IncludeXmlComments(xmlPath);
                 }
 
-                // JWT Güvenlik Tan?m?
+                // JWT Gï¿½venlik Tan?m?
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -41,7 +41,7 @@ namespace CityDiscovery.AdminNotificationService
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "JWT Token'?n?z? buraya yap??t?r?n. Ba??ndaki 'Bearer ' k?sm?n? eklemenize gerek yoktur."
+                    Description = "LÃ¼tfen sadece JWT token'?n?z? yap??t?r?n. (Bearer yazman?za GEREK YOK)"
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -60,6 +60,9 @@ namespace CityDiscovery.AdminNotificationService
                 .AddAdminNotificationApplication(builder.Configuration)
                 .AddAdminNotificationInfrastructure(builder.Configuration);
 
+            // Health Checks
+            builder.Services.AddHealthChecks();
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -69,13 +72,15 @@ namespace CityDiscovery.AdminNotificationService
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Admin Notification API V1");
                     c.DocumentTitle = "CityDiscovery Frontend API Guide";
-                    c.DefaultModelsExpandDepth(-1); // Model ?emalar?n? varsay?lan olarak kapal? tutar, kalabal??? önler
+                    c.DefaultModelsExpandDepth(-1); // Model ?emalar?n? varsay?lan olarak kapal? tutar, kalabal??? ï¿½nler
                 });
             }
 
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+
+
             app.MapControllers();
             app.Run();
         }
