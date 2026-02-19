@@ -21,5 +21,8 @@ namespace CityDiscovery.AdminNotificationService.Application.Interfaces.Reposito
         Task AddRangeAsync(IEnumerable<Notification> notifications);
         // Mevcut koda ekle:
         Task DeleteByTargetIdAsync(Guid targetId, string targetType);
+
+        Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+        Task DeleteAllAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }

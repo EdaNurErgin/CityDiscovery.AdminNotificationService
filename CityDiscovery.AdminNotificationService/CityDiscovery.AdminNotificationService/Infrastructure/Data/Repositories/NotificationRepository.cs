@@ -110,15 +110,24 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositorie
                 .Where(n => n.TargetId == targetId && n.TargetType == targetType)
                 .ExecuteDeleteAsync();
 
-            // Eğer eski EF Core kullanıyorsan veya ExecuteDeleteAsync yoksa:
-            /*
-            var notifications = await _context.Notifications
-                .Where(n => n.TargetId == targetId && n.TargetType == targetType)
-                .ToListAsync();
 
-            _context.Notifications.RemoveRange(notifications);
-            await _context.SaveChangesAsync();
-            */
+        }
+
+        // 1. Tekil Silme
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            // ExecuteDeleteAsync doğrudan SQL 'DELETE' komutu gönderir.
+            await _context.Notifications
+                .Where(n => n.Id == id)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        // 2. Toplu Silme (Kullanıcının tüm bildirimlerini temizle)
+        public async Task DeleteAllAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .ExecuteDeleteAsync(cancellationToken);
         }
     }
 }

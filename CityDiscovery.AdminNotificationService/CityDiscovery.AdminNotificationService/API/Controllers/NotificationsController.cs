@@ -1,4 +1,6 @@
 ﻿using CityDiscovery.AdminNotificationService.Application.Common.Models;
+using CityDiscovery.AdminNotificationService.Application.Features.Notifications.Commands.DeleteAllNotifications;
+using CityDiscovery.AdminNotificationService.Application.Features.Notifications.Commands.DeleteNotification;
 using CityDiscovery.AdminNotificationService.Application.Features.Notifications.Commands.MarkAllAsRead;
 using CityDiscovery.AdminNotificationService.Application.Features.Notifications.Commands.MarkAsRead;
 using CityDiscovery.AdminNotificationService.Application.Features.Notifications.DTOs;
@@ -6,8 +8,7 @@ using CityDiscovery.AdminNotificationService.Application.Features.Notifications.
 using CityDiscovery.AdminNotificationService.Application.Features.Notifications.Queries.GetUserNotifications;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using CityDiscovery.AdminNotificationService.API.Models.Requests;
-
+using CityDiscovery.AdminNotificationService.API.Models.Requests; // Request modelleri için
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
@@ -22,29 +23,18 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             _mediator = mediator;
         }
 
-        /// <summary>(User-0)
-        /// Kullanıcının bildirim listesini getirir.
+        /// <summary>
+        /// (User-0) Kullanıcının bildirim listesini getirir.
         /// </summary>
-        /// <remarks>
-        /// Örnek: GET /api/notifications?userId=...&amp;page=1&amp;pageSize=20
-        /// </remarks>
-        /// <param name="userId">Bildirimleri getirilecek kullanıcının benzersiz ID'si</param>
-        /// <param name="page">Sayfa numarası (Varsayılan: 1)</param>
-        /// <param name="pageSize">Sayfadaki kayıt sayısı (Varsayılan: 20)</param>
-        /// <param name="unreadOnly">Sadece okunmamışları getirmek için true gönderin</param>
-
         [ProducesResponseType(typeof(PagedResult<NotificationDto>), StatusCodes.Status200OK)]
         [HttpGet]
         public async Task<ActionResult<PagedResult<NotificationDto>>> GetUserNotifications(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid userId, // <-- MANUEL GİRİŞ GERİ GELDİ
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] bool unreadOnly = false,
             CancellationToken cancellationToken = default)
         {
-            // NOT: Gerçekte userId'yi token'dan alman daha güvenli:
-            // var userId = User.GetUserId();
-
             var query = new GetUserNotificationsQuery
             {
                 UserId = userId,
@@ -57,13 +47,12 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return Ok(result);
         }
 
-        // GET api/notifications/unread-count?userId=...
-        /// <summary>(User-0)
-        /// Kullanıcının toplam okunmamış bildirim sayısını döner.
+        /// <summary>
+        /// (User-0) Kullanıcının toplam okunmamış bildirim sayısını döner.
         /// </summary>
         [HttpGet("unread-count")]
         public async Task<ActionResult<int>> GetUnreadCount(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid userId, // <-- MANUEL GİRİŞ GERİ GELDİ
             CancellationToken cancellationToken = default)
         {
             var query = new GetUnreadCountQuery(userId);
@@ -71,16 +60,15 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return Ok(count);
         }
 
-        // PUT api/notifications/{id}/read
-        /// <summary>(User-0)
-        /// Belirli bir bildirimi okundu olarak işaretler.
+        /// <summary>
+        /// (User-0) Belirli bir bildirimi okundu olarak işaretler.
         /// </summary>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("{id:guid}/read")]
         public async Task<IActionResult> MarkAsRead(
             Guid id,
-            [FromBody] MarkReadRequest request,
+            [FromBody] MarkReadRequest request, // <-- BODY'DEN ID ALMA GERİ GELDİ
             CancellationToken cancellationToken = default)
         {
             var command = new MarkNotificationAsReadCommand
@@ -93,13 +81,12 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return NoContent();
         }
 
-        // PUT api/notifications/read-all
-        /// <summary>(User-0)
-        /// Kullanıcının tüm bildirimlerini tek seferde 'okundu' olarak işaretler.
+        /// <summary>
+        /// (User-0) Kullanıcının tüm bildirimlerini tek seferde 'okundu' olarak işaretler.
         /// </summary>
         [HttpPut("read-all")]
         public async Task<IActionResult> MarkAllAsRead(
-            [FromBody] MarkAllReadRequest request,
+            [FromBody] MarkAllReadRequest request, // <-- BODY'DEN ID ALMA GERİ GELDİ
             CancellationToken cancellationToken = default)
         {
             var command = new MarkAllNotificationsAsReadCommand
@@ -111,6 +98,45 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return NoContent();
         }
 
+        // DELETE api/notifications/{id}
+        /// <summary>
+        /// (User-0) Belirli bir bildirimi siler.
+        /// </summary>
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteNotification(
+            Guid id,
+            [FromQuery] Guid userId, // <-- SİLME İŞLEMİ İÇİN QUERY'DEN ID İSTİYORUZ
+            CancellationToken cancellationToken = default)
+        {
+            var command = new DeleteNotificationCommand
+            {
+                NotificationId = id,
+                UserId = userId
+            };
 
+            await _mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
+
+        // DELETE api/notifications/delete-all
+        /// <summary>
+        /// (User-0) Kullanıcının tüm bildirimlerini siler (Temizlik).
+        /// </summary>
+        [HttpDelete("delete-all")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeleteAllNotifications(
+            [FromQuery] Guid userId, // <-- SİLME İŞLEMİ İÇİN QUERY'DEN ID İSTİYORUZ
+            CancellationToken cancellationToken = default)
+        {
+            var command = new DeleteAllNotificationsCommand
+            {
+                UserId = userId
+            };
+
+            await _mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
     }
 }

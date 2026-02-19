@@ -27,6 +27,7 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
             services.AddScoped<IContentReportRepository, ContentReportRepository>();
             services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
             services.AddJwtAuthentication(configuration);
+
             // 3. External Services (HTTP Clients) - EKSİKTİ, EKLENDİ
             // VenueCreatedConsumer içinde Identity servisine istek atıyoruz, bu yüzden gerekli.
             services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(client =>
@@ -46,6 +47,7 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
                 // AddMassTransit bloğunun içine ekle:
                 x.AddConsumer<ReviewDeletedConsumer>();
                 x.AddConsumer<PostDeletedConsumer>();
+                x.AddConsumer<UserCreatedConsumer>();
 
                 // Queue isimlerini otomatik formatla (örn: venue-created-event)
                 x.SetKebabCaseEndpointNameFormatter();
@@ -62,12 +64,21 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
                         h.Password(password);
                     });
 
-                    // Hata durumunda tekrar deneme politikası
                     cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
 
-                    // Otomatik Endpoint Yapılandırması
-                    // Bu metod, yukarıda eklediğimiz Consumer'lar için gerekli queue'ları 
-                    // otomatik oluşturur ve bağlar. Tek tek ReceiveEndpoint yazmanıza gerek kalmaz.
+                    // ÖNERİ: Manuel ReceiveEndpoint kullanıyorsan ConfigureEndpoints'i en sona koy.
+                    // Ancak UserCreatedConsumer için manuel ayar yapacaksan aşağıdakini kullan:
+
+                    cfg.ReceiveEndpoint("user-created-queue", e =>
+                    {
+                        // ÖNEMLİ: Eğer namespace uyuşmazlığından korkuyorsan 
+                        // exchange adını manuel olarak buraya bağlayabilirsin:
+                        e.Bind("IdentityService.Shared.MessageBus.Identity:UserCreatedEvent");
+
+                        e.ConfigureConsumer<UserCreatedConsumer>(context);
+                    });
+
+                    // Diğer (Venue, Review vb.) otomatik isimlendirme ile devam etsinler
                     cfg.ConfigureEndpoints(context);
                 });
             });

@@ -40,6 +40,7 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consu
                         Id = Guid.NewGuid(),
                         UserId = admin.Id,
                         Type = "VenueApprovalNeeded",
+                        Message = $"'{msg.Name}' isimli yeni mekan onay bekliyor.",
                         ActorUserId = msg.OwnerUserId, // Mekanı açan kişi Actor oluyor
                         Payload = payloadJson,
                         TargetType = "Venue",
