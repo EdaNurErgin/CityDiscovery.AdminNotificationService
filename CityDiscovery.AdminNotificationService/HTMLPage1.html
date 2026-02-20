@@ -1,0 +1,36 @@
+﻿<!--<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR Admin Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+    <h2>Admin Anlık Bildirim Testi</h2>
+    <div id="status" style="color: red;">Bağlanılıyor...</div>
+    <ul id="messagesList"></ul>
+
+    <script>
+        // KENDİ ADMIN NOTIFICATION SERVICE PORTUNU YAZ
+        const hubUrl = "https://localhost:7266/hubs/notifications";
+
+        // SWAGGER'DAN ALDIĞIN TOKENI BURAYA YAPIŞTIR
+        const adminToken = "TOKEN_GIR";
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl, { accessTokenFactory: () => adminToken })
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ReceiveAdminNotification", function (notification) {
+            const li = document.createElement("li");
+            li.textContent = `[${new Date().toLocaleTimeString()}] TİP: ${notification.type} | MESAJ: ${notification.message}`;
+            document.getElementById("messagesList").prepend(li);
+        });
+
+        connection.start().then(function () {
+            document.getElementById("status").innerText = "Bağlantı Başarılı! Bildirimler Bekleniyor...";
+            document.getElementById("status").style.color = "green";
+        }).catch(err => console.error(err));
+    </script>
+</body>
+</html>-->
