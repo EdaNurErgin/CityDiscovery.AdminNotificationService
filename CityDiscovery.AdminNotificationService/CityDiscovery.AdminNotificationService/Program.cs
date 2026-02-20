@@ -2,6 +2,7 @@ using System.Reflection;
 using CityDiscovery.AdminNotificationService.Application.DependencyInjection;
 using CityDiscovery.AdminNotificationService.Infrastructure.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using CityDiscovery.AdminNotificationService.API.Hubs;
 
 namespace CityDiscovery.AdminNotificationService
 {
@@ -13,6 +14,17 @@ namespace CityDiscovery.AdminNotificationService
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy.SetIsOriginAllowed(_ => true) // Tüm kaynaklara izin ver 
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // SignalR token iletimi için credentials şarttır
+                });
+            });
 
             // Swagger Dok�mantasyon Ayarlar?
             builder.Services.AddSwaggerGen(c =>
@@ -62,8 +74,11 @@ namespace CityDiscovery.AdminNotificationService
 
             // Health Checks
             builder.Services.AddHealthChecks();
+            builder.Services.AddSignalR();
 
             var app = builder.Build();
+
+            app.MapHub<NotificationHub>("/hubs/notifications");
 
             if (app.Environment.IsDevelopment())
             {
@@ -77,6 +92,7 @@ namespace CityDiscovery.AdminNotificationService
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
 
