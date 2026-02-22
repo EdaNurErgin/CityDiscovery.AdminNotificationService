@@ -1,4 +1,4 @@
-﻿using CityDiscovery.AdminNotificationService.Application.Common.Models; // PagedResult burada
+﻿using CityDiscovery.AdminNotificationService.Application.Common.Models; 
 using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.DTOs;
 using MediatR;
 

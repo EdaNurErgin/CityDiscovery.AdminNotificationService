@@ -3,6 +3,7 @@ using CityDiscovery.AdminNotificationService.Application.DependencyInjection;
 using CityDiscovery.AdminNotificationService.Infrastructure.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using CityDiscovery.AdminNotificationService.API.Hubs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace CityDiscovery.AdminNotificationService
 {
@@ -19,33 +20,27 @@ namespace CityDiscovery.AdminNotificationService
             {
                 options.AddPolicy("CorsPolicy", policy =>
                 {
-                    policy.SetIsOriginAllowed(_ => true) // Tüm kaynaklara izin ver 
+                    policy.SetIsOriginAllowed(_ => true)
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowCredentials(); // SignalR token iletimi için credentials şarttır
+                          .AllowCredentials();
                 });
             });
 
-            // Swagger Dok�mantasyon Ayarlar?
+            // Swagger
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "CityDiscovery Admin & Notification API",
-                    Version = "v1",
-                    Description = "Bu API; kullan?c? bildirimleri, sistem geri bildirimleri (Feedback) ve i�erik raporlama (Reporting) s�re�lerini y�netir. \n\n" +
-                                  "**Not:** T�m PUT/POST i?lemlerinde JSON g�vdesi beklenmektedir."
+                    Version = "v1"
                 });
 
-                // Kod i�indeki /// <summary> yorumlar?n? Swagger'a aktar?r
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
-                {
                     c.IncludeXmlComments(xmlPath);
-                }
 
-                // JWT G�venlik Tan?m?
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -53,7 +48,7 @@ namespace CityDiscovery.AdminNotificationService
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Lütfen sadece JWT token'?n?z? yap??t?r?n. (Bearer yazman?za GEREK YOK)"
+                    Description = "JWT token'ınızı yapıştırın."
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -72,14 +67,41 @@ namespace CityDiscovery.AdminNotificationService
                 .AddAdminNotificationApplication(builder.Configuration)
                 .AddAdminNotificationInfrastructure(builder.Configuration);
 
-            // Health Checks
             builder.Services.AddHealthChecks();
             builder.Services.AddSignalR();
 
+            // =====================================================================
+            // KRİTİK: SignalR için JWT query string desteği
+            // SignalR WebSocket bağlantısı Header yerine query string'den token okur
+            // =====================================================================
+            builder.Services.PostConfigure<JwtBearerOptions>(
+                JwtBearerDefaults.AuthenticationScheme, options =>
+                {
+                    var existingOnMessageReceived = options.Events?.OnMessageReceived;
+
+                    options.Events ??= new JwtBearerEvents();
+                    options.Events.OnMessageReceived = async context =>
+                    {
+                        // Önce varsa mevcut handler'ı çağır
+                        if (existingOnMessageReceived != null)
+                            await existingOnMessageReceived(context);
+
+                        // SignalR hub path'leri için query string'den token al
+                        var path = context.HttpContext.Request.Path;
+                        var accessToken = context.Request.Query["access_token"];
+
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/hubs/notifications") ||
+                             path.StartsWithSegments("/hubs/user-notifications")))
+                        {
+                            context.Token = accessToken;
+                        }
+                    };
+                });
+
             var app = builder.Build();
 
-            app.MapHub<NotificationHub>("/hubs/notifications");
-
+            // Hub mapping'leri UseAuthentication'dan ÖNCE değil, SONRA olmalı
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -87,17 +109,21 @@ namespace CityDiscovery.AdminNotificationService
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Admin Notification API V1");
                     c.DocumentTitle = "CityDiscovery Frontend API Guide";
-                    c.DefaultModelsExpandDepth(-1); // Model ?emalar?n? varsay?lan olarak kapal? tutar, kalabal??? �nler
+                    c.DefaultModelsExpandDepth(-1);
                 });
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("CorsPolicy");
-            app.UseAuthentication();
-            app.UseAuthorization();
-
+            app.UseCors("CorsPolicy");         // 1. CORS
+            app.UseAuthentication();           // 2. Authentication
+            app.UseAuthorization();            // 3. Authorization
 
             app.MapControllers();
+
+            // Hub mapping'leri — UseAuthorization'dan sonra
+            app.MapHub<NotificationHub>("/hubs/notifications");
+            app.MapHub<UserNotificationHub>("/hubs/user-notifications"); 
+
             app.Run();
         }
     }

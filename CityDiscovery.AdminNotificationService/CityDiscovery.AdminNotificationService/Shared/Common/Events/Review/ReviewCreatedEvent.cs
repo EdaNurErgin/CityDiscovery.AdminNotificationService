@@ -1,6 +1,6 @@
-﻿using System;
+﻿
 
-// DİKKAT: ReviewService'deki namespace ile birebir aynı olmalı
+
 namespace CityDiscovery.ReviewService.ReviewService.Shared.Events.Review
 {
     public class ReviewCreatedEvent

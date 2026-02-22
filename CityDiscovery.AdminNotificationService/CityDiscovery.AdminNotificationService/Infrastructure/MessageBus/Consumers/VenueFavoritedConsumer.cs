@@ -1,7 +1,10 @@
-﻿using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
+﻿//using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
+//using CityDiscovery.AdminNotificationService.Domain.Entities;
+//using CityDiscovery.ReviewService.ReviewService.Shared.Events.Venue;
+using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
 using CityDiscovery.AdminNotificationService.Application.Interfaces.External;
 using CityDiscovery.AdminNotificationService.Domain.Entities;
-using CityDiscovery.ReviewService.ReviewService.Shared.Events.Review;
+using CityDiscovery.ReviewService.ReviewService.Shared.Events.Venue;
 using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using CityDiscovery.AdminNotificationService.API.Hubs;
@@ -9,18 +12,18 @@ using System.Text.Json;
 
 namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consumers
 {
-    public class ReviewCreatedConsumer : IConsumer<ReviewCreatedEvent>
+    public class VenueFavoritedConsumer : IConsumer<VenueFavoritedEvent>
     {
         private readonly INotificationRepository _notificationRepository;
         private readonly IIdentityServiceClient _identityServiceClient;
         private readonly IHubContext<UserNotificationHub> _userHubContext;
-        private readonly ILogger<ReviewCreatedConsumer> _logger;
+        private readonly ILogger<VenueFavoritedConsumer> _logger;
 
-        public ReviewCreatedConsumer(
+        public VenueFavoritedConsumer(
             INotificationRepository notificationRepository,
             IIdentityServiceClient identityServiceClient,
             IHubContext<UserNotificationHub> userHubContext,
-            ILogger<ReviewCreatedConsumer> logger)
+            ILogger<VenueFavoritedConsumer> logger)
         {
             _notificationRepository = notificationRepository;
             _identityServiceClient = identityServiceClient;
@@ -28,49 +31,43 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consu
             _logger = logger;
         }
 
-        public async Task Consume(ConsumeContext<ReviewCreatedEvent> context)
+        public async Task Consume(ConsumeContext<VenueFavoritedEvent> context)
         {
             var msg = context.Message;
 
-            if (msg.VenueOwnerId == msg.UserId)
-                return;
-
-            if (msg.VenueOwnerId == Guid.Empty)
+            if (msg.OwnerUserId == Guid.Empty)
             {
-                _logger.LogWarning("VenueOwnerId boş geldi. ReviewId: {ReviewId}", msg.ReviewId);
+                _logger.LogWarning("OwnerUserId boş geldi. VenueId: {VenueId}", msg.VenueId);
                 return;
             }
 
-            // Yorumu yapan kişinin adını çek
+            if (msg.OwnerUserId == msg.UserId)
+                return;
+
+            // Favorileyen kişinin adını çek
             var actor = await _identityServiceClient.GetUserAsync(msg.UserId);
             var actorName = actor?.UserName ?? "Bir kullanıcı";
 
-            var commentPreview = string.IsNullOrEmpty(msg.Comment)
-                ? ""
-                : (msg.Comment.Length > 100 ? msg.Comment.Substring(0, 100) + "..." : msg.Comment);
-
             var payloadJson = JsonSerializer.Serialize(new
             {
-                ReviewId = msg.ReviewId,
                 VenueId = msg.VenueId,
-                ReviewerUserId = msg.UserId,
-                ReviewerUserName = actorName,
-                ReviewerAvatarUrl = actor?.AvatarUrl,
-                Rating = msg.Rating,
-                CommentPreview = commentPreview
+                FavoritedByUserId = msg.UserId,
+                FavoritedByUserName = actorName,
+                FavoritedByAvatarUrl = actor?.AvatarUrl,
+                FavoritedAt = msg.FavoritedAt
             });
 
             var notification = new Notification
             {
                 Id = Guid.NewGuid(),
-                UserId = msg.VenueOwnerId,
-                Type = "NewReview",
-                Message = $"{actorName} mekanınıza {msg.Rating} yıldız verdi.",
+                UserId = msg.OwnerUserId,
+                Type = "VenueFavorited",
+                Message = $"{actorName} mekanınızı favorilerine ekledi.",
                 ActorUserId = msg.UserId,
                 Payload = payloadJson,
                 TargetType = "Venue",
                 TargetId = msg.VenueId,
-                Route = $"/venues/{msg.VenueId}/reviews",
+                Route = $"/venues/{msg.VenueId}",
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
@@ -81,7 +78,7 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consu
             try
             {
                 await _userHubContext.Clients
-                    .User(msg.VenueOwnerId.ToString())
+                    .User(msg.OwnerUserId.ToString())
                     .SendAsync("ReceiveNotification", new
                     {
                         Id = notification.Id,
@@ -91,16 +88,13 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consu
                         ActorUserId = msg.UserId,
                         ActorUserName = actorName,
                         ActorAvatarUrl = actor?.AvatarUrl,
-                        ReviewId = msg.ReviewId,
                         VenueId = msg.VenueId,
-                        Rating = msg.Rating,
-                        CommentPreview = commentPreview,
                         CreatedAt = notification.CreatedAt
                     });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "SignalR gönderimi başarısız. OwnerId: {OwnerId}", msg.VenueOwnerId);
+                _logger.LogError(ex, "SignalR gönderimi başarısız. OwnerId: {OwnerId}", msg.OwnerUserId);
             }
         }
     }

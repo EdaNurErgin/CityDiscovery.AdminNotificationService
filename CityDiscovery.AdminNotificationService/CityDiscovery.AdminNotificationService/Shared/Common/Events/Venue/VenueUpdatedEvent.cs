@@ -1,4 +1,4 @@
-﻿// Shared.Common/Events/Venue/VenueUpdatedEvent.cs
+﻿
 namespace CityDiscovery.VenuesService.Shared.Common.Events.Venue;
 public class VenueUpdatedEvent
 {

@@ -7,7 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CityDiscovery.AdminNotifica
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SignalRTest", "SignalRTest", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
-		HTMLPage1.html = HTMLPage1.html
+		UserOwnerSignalTest.html = UserOwnerSignalTest.html
+		AdminSignalRTest.html = AdminSignalRTest.html
 	EndProjectSection
 EndProject
 Global

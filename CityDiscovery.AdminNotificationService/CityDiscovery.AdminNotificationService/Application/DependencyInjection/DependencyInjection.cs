@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using FluentValidation;
-using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+
 
 namespace CityDiscovery.AdminNotificationService.Application.DependencyInjection
 {

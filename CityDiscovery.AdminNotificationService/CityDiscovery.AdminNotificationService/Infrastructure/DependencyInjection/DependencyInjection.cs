@@ -1,12 +1,14 @@
 ﻿using CityDiscovery.AdminNotificationService.Application.Interfaces.External;
+using CityDiscovery.AdminNotificationService.Application.Interfaces.ExternalServices;
 using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
 using CityDiscovery.AdminNotificationService.Infrastructure.Data.Context;
 using CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositories;
-using CityDiscovery.AdminNotificationService.Infrastructure.ExternalServices; // Bunu ekledik
+using CityDiscovery.AdminNotificationService.Infrastructure.ExternalServices; 
 using CityDiscovery.AdminNotificationService.Infrastructure.MessageBus.Consumers;
 using CityDiscovery.AdminNotificationService.Infrastructure.Security;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInjection
 {
@@ -26,16 +28,18 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
             services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
             services.AddScoped<IContentReportRepository, ContentReportRepository>();
             services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
+            services.AddScoped<IUserOwnerNotificationService, UserOwnerNotificationService>();
             services.AddJwtAuthentication(configuration);
-
-            // 3. External Services (HTTP Clients) - EKSİKTİ, EKLENDİ
+           
+           
+            // 3. External Services (HTTP Clients) 
             // VenueCreatedConsumer içinde Identity servisine istek atıyoruz, bu yüzden gerekli.
             services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(client =>
             {
                 client.BaseAddress = new Uri(configuration["ServiceUrls:IdentityService"] ?? "http://localhost:5001");
             });
 
-            // 4. MassTransit + RabbitMQ (Tek blok halinde birleştirildi)
+            // 4. MassTransit + RabbitMQ 
             services.AddMassTransit(x =>
             {
                 // Tüm Consumer'ları buraya ekliyoruz
@@ -44,10 +48,10 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
                 x.AddConsumer<CommentAddedConsumer>();
                 x.AddConsumer<PostLikedConsumer>();
                 x.AddConsumer<ReviewCreatedConsumer>();
-                // AddMassTransit bloğunun içine ekle:
                 x.AddConsumer<ReviewDeletedConsumer>();
                 x.AddConsumer<PostDeletedConsumer>();
                 x.AddConsumer<UserCreatedConsumer>();
+                x.AddConsumer<VenueFavoritedConsumer>();
 
                 // Queue isimlerini otomatik formatla (örn: venue-created-event)
                 x.SetKebabCaseEndpointNameFormatter();
@@ -66,8 +70,8 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
 
                     cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
 
-                    // ÖNERİ: Manuel ReceiveEndpoint kullanıyorsan ConfigureEndpoints'i en sona koy.
-                    // Ancak UserCreatedConsumer için manuel ayar yapacaksan aşağıdakini kullan:
+                    
+                    
 
                     cfg.ReceiveEndpoint("user-created-queue", e =>
                     {
@@ -78,7 +82,12 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
                         e.ConfigureConsumer<UserCreatedConsumer>(context);
                     });
 
-                    // Diğer (Venue, Review vb.) otomatik isimlendirme ile devam etsinler
+                    cfg.ReceiveEndpoint("comment-added-notification-queue", e =>
+                    {
+                        e.Bind("CityDiscovery.SocialService.SocialServiceShared.Common.Events.Social:CommentAddedEvent");
+                        e.ConfigureConsumer<CommentAddedConsumer>(context);
+                    });
+                    // Diğer (Venue, Review vb.) otomatik isimlendirme ile devam etsin
                     cfg.ConfigureEndpoints(context);
                 });
             });

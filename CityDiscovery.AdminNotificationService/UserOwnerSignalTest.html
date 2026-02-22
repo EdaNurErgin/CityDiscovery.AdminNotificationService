@@ -1,0 +1,57 @@
+﻿<!--<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR User Notification Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+    <h2>Kullanıcı Anlık Bildirim Testi</h2>
+    <div id="status" style="color: red;">Bağlanılıyor...</div>
+    <div id="userId" style="color: gray; font-size: 12px;"></div>
+    <ul id="messagesList"></ul>
+
+    <script>
+        const hubUrl = "https://localhost:7266/hubs/user-notifications";
+        const token = "tokengır";
+
+        // Token'dan userId'yi decode et (debug için)
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload["sub"]
+                        || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+            document.getElementById("userId").innerText = `Token UserId: ${userId}`;
+            console.log("Token payload:", payload);
+        } catch(e) {}
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl, { accessTokenFactory: () => token })
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Debug) // ← Detaylı log
+            .build();
+
+        // ✅ DOĞRU EVENT ADI
+        connection.on("ReceiveNotification", function (notification) {
+            console.log("Bildirim geldi:", notification);
+            const li = document.createElement("li");
+            li.style.marginBottom = "8px";
+            li.innerHTML = `
+                <strong>[${new Date().toLocaleTimeString()}]</strong>
+                TİP: <code>${notification.type}</code> |
+                MESAJ: ${notification.message} |
+                ROUTE: ${notification.route ?? "-"}
+            `;
+            document.getElementById("messagesList").prepend(li);
+        });
+
+        connection.start().then(function () {
+            document.getElementById("status").innerText = "✅ Bağlantı Başarılı! Bildirimler Bekleniyor...";
+            document.getElementById("status").style.color = "green";
+            console.log("SignalR bağlandı. ConnectionId:", connection.connectionId);
+        }).catch(function(err) {
+            document.getElementById("status").innerText = "❌ Bağlantı Hatası: " + err;
+            document.getElementById("status").style.color = "red";
+            console.error("SignalR bağlantı hatası:", err);
+        });
+    </script>
+</body>
+</html>-->

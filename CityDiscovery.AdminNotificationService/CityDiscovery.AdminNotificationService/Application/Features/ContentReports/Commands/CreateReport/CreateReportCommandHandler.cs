@@ -52,7 +52,7 @@ namespace CityDiscovery.AdminNotificationService.Application.Features.ContentRep
             await _contentReportRepository.AddAsync(report, cancellationToken);
             await _contentReportRepository.SaveChangesAsync(cancellationToken);
 
-            // 2. Opsiyonel: admin log 
+            // 2.: admin log 
             var log = new AdminAuditLog
             {
                 Id = Guid.NewGuid(),
