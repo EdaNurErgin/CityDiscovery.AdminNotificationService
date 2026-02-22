@@ -8,6 +8,7 @@ namespace CityDiscovery.AdminNotificationService.Application.Features.ContentRep
         public string ReportedType { get; set; } = default!;
         public Guid ReportedId { get; set; }
         public Guid ReportingUserId { get; set; }
+        public string? ReportingUserName { get; set; }
         public string? Reason { get; set; }
         public string Status { get; set; } = default!;
         public DateTime CreatedAt { get; set; }

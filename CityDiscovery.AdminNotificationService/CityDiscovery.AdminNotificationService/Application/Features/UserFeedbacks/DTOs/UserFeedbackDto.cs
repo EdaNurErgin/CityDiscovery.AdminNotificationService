@@ -7,9 +7,11 @@ namespace CityDiscovery.AdminNotificationService.Application.Features.UserFeedba
     public class UserFeedbackDto
     {
         public Guid Id { get; set; }
+        
 
         [JsonIgnore]
         public Guid UserId { get; set; }
+        public string? UserName { get; set; }
         public string Type { get; set; } = default!;     // Feedback, Complaint, Suggestion, Bug
         public string? Subject { get; set; }
         public string Message { get; set; } = default!;
