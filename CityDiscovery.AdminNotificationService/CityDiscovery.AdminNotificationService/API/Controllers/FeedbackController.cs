@@ -5,11 +5,17 @@ using CityDiscovery.AdminNotificationService.Application.Features.UserFeedbacks.
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using CityDiscovery.AdminNotificationService.API.Models.Requests;
+using Microsoft.AspNetCore.Authorization; 
+using System.Security.Claims; 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CityDiscovery.AdminNotificationService.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Token'ın okunabilmesi ve güvenlik için eklendi
     public class FeedbackController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -28,10 +34,19 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         /// </remarks>
         [HttpPost]
         public async Task<IActionResult> CreateFeedback(
-            [FromBody] CreateFeedbackCommand command,
+            [FromBody] CreateFeedbackCommand command, 
             CancellationToken cancellationToken)
         {
-            // JWT kullanırsan UserId'yi token'dan alıp command.UserId'ye set edebilirsin
+            // TOKENDEN OTOMATİK ALMA: Geri bildirimi oluşturan kullanıcının ID'sini çekiyoruz
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out Guid tokenUserId))
+            {
+                if (command != null)
+                {
+                    command.UserId = tokenUserId; // Body'den gelen sahte ID'yi gerçek token ID'si ile eziyoruz
+                }
+            }
+
             var result = await _mediator.Send(command, cancellationToken);
             return CreatedAtAction(nameof(GetUserFeedback), new { userId = result.UserId }, result);
         }
@@ -41,9 +56,14 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         /// </summary>
         [HttpGet("user/{userId:guid}")]
         public async Task<IActionResult> GetUserFeedback(
-            Guid userId,
+            Guid userId, // <-- ROUTE PARAMETRESİ KORUNDU (Akışı bozmamak için)
             CancellationToken cancellationToken)
         {
+            /* Not: Bu metotta "userId" URL'den (route) geliyor. Adminlerin başka kullanıcıların 
+               geçmiş geri bildirimlerini inceleyebilmesi (iş akışının bozulmaması) adına 
+               burada Token ile ID ezme (override) işlemi bilerek yapılmamıştır. 
+               Query eskisi gibi çalışmaya devam edecektir. */
+
             var query = new GetUserFeedbackQuery(userId);
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
@@ -53,6 +73,7 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         /// Admin Paneli: Henüz çözümlenmemiş (Open veya InProgress) geri bildirimleri getirir.
         /// </summary>
         [HttpGet("open")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetOpenFeedback(CancellationToken cancellationToken)
         {
             var query = new GetOpenFeedbackQuery();
@@ -68,22 +89,31 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
         /// NewStatus alanına şunlar yazılabilir: 'Open', 'InProgress', 'Resolved', 'Closed'.
         /// </remarks>
         [HttpPut("{id:guid}/status")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStatus(
             Guid id,
-            [FromBody] UpdateStatusRequest request,
+            [FromBody] UpdateStatusRequest request, // <-- BODY KORUNDU
             CancellationToken cancellationToken)
         {
+            // TOKENDEN OTOMATİK ALMA: İşlemi gerçekleştiren Admin'in ID'sini çekiyoruz
+            var adminIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            if (!string.IsNullOrEmpty(adminIdClaim) && Guid.TryParse(adminIdClaim, out Guid tokenAdminId))
+            {
+                if (request != null)
+                {
+                    request.AdminUserId = tokenAdminId; // Body'den gelen ID'yi güvenli Token ID'si ile eziyoruz
+                }
+            }
+
             var command = new UpdateFeedbackStatusCommand
             {
                 FeedbackId = id,
-                AdminUserId = request.AdminUserId,
-                NewStatus = request.NewStatus
+                AdminUserId = request?.AdminUserId ?? Guid.Empty, // Token'dan alınan değer buraya geçer
+                NewStatus = request?.NewStatus
             };
 
             await _mediator.Send(command, cancellationToken);
             return NoContent();
         }
-
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿using CityDiscovery.AdminNotificationService.Application.Interfaces.External;
-using CityDiscovery.AdminNotificationService.Application.Interfaces.ExternalServices;
 using CityDiscovery.AdminNotificationService.Application.Interfaces.Repositories;
 using CityDiscovery.AdminNotificationService.Infrastructure.Data.Context;
 using CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositories;
@@ -28,7 +27,6 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.DependencyInject
             services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
             services.AddScoped<IContentReportRepository, ContentReportRepository>();
             services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
-            services.AddScoped<IUserOwnerNotificationService, UserOwnerNotificationService>();
             services.AddJwtAuthentication(configuration);
            
            

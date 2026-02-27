@@ -208,7 +208,6 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             return NoContent();
         }
 
-        // ─── Yardımcı Metot ─────────────────────────────────────────────────────
 
         /// <summary>
         /// JWT token'dan UserId'yi okur.

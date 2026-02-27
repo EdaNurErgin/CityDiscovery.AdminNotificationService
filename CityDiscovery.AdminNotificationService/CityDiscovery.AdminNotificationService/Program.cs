@@ -70,10 +70,10 @@ namespace CityDiscovery.AdminNotificationService
             builder.Services.AddHealthChecks();
             builder.Services.AddSignalR();
 
-            // =====================================================================
-            // KRİTİK: SignalR için JWT query string desteği
+            
+            //  SignalR için JWT query string desteği
             // SignalR WebSocket bağlantısı Header yerine query string'den token okur
-            // =====================================================================
+            
             builder.Services.PostConfigure<JwtBearerOptions>(
                 JwtBearerDefaults.AuthenticationScheme, options =>
                 {

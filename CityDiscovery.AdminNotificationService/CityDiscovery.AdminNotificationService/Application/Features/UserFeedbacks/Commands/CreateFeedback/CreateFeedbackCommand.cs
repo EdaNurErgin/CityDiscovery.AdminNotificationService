@@ -1,10 +1,12 @@
 ﻿using CityDiscovery.AdminNotificationService.Application.Features.UserFeedbacks.DTOs;
 using MediatR;
+using System.Text.Json.Serialization;
 
 namespace CityDiscovery.AdminNotificationService.Application.Features.UserFeedbacks.Commands.CreateFeedback
 {
     public class CreateFeedbackCommand : IRequest<UserFeedbackDto>
     {
+        [JsonIgnore]
         public Guid UserId { get; set; }
         public string Type { get; set; } = default!;      // Feedback, Complaint, Suggestion, Bug
         public string? Subject { get; set; }
