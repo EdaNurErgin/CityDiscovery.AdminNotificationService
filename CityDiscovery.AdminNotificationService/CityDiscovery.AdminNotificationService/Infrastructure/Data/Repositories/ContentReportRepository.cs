@@ -68,5 +68,14 @@ namespace CityDiscovery.AdminNotificationService.Infrastructure.Data.Repositorie
 
             return (items, totalCount);
         }
+
+        // Sınıfın içine ekleyin:
+        public async Task<List<ContentReport>> GetByReportingUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ContentReports
+                .Where(x => x.ReportingUserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

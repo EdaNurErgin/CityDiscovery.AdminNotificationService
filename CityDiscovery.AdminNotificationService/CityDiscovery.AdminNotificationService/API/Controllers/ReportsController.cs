@@ -1,14 +1,15 @@
-﻿using CityDiscovery.AdminNotificationService.Application.Common.Models;
+﻿using CityDiscovery.AdminNotificationService.API.Models.Requests;
+using CityDiscovery.AdminNotificationService.Application.Common.Models;
 using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Commands.CreateReport;
 using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Commands.ResolveReport;
 using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.DTOs;
 using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Queries.GetContentReports;
+using CityDiscovery.AdminNotificationService.Application.Features.ContentReports.Queries.GetReportsByUserId;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using CityDiscovery.AdminNotificationService.API.Models.Requests;
 using Microsoft.AspNetCore.Authorization; // Token için eklendi
-using System.Security.Claims; // ClaimTypes için eklendi
+using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Security.Claims; // ClaimTypes için eklendi
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -108,6 +109,24 @@ namespace CityDiscovery.AdminNotificationService.API.Controllers
             };
 
             var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+
+        // GET api/reports/user/{userId}
+        /// <summary>
+        /// Bir kullanıcının geçmişte gönderdiği tüm raporları (şikayetleri) listeler.
+        /// </summary>
+        [HttpGet("user/{userId:guid}")]
+        public async Task<IActionResult> GetUserReports(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            /* Not: Bu metotta "userId" URL'den (route) geliyor. Adminlerin veya ilgili
+               kullanıcının kendi raporlarını görebilmesi için route parametresi kullanılmıştır. */
+
+            var query = new GetReportsByUserIdQuery(userId);
+            var result = await _mediator.Send(query, cancellationToken);
+
             return Ok(result);
         }
     }

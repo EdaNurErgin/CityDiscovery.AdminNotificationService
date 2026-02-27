@@ -15,6 +15,6 @@ namespace CityDiscovery.AdminNotificationService.Application.Interfaces.Reposito
             int pageSize,
             string? status, // Opsiyonel: 'Open', 'Resolved' vs. filtrelemek için
             CancellationToken cancellationToken = default);
-
+        Task<List<ContentReport>> GetByReportingUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }
