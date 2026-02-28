@@ -99,6 +99,8 @@ namespace CityDiscovery.AdminNotificationService
                     };
                 });
 
+            builder.Services.AddHealthChecks(); 
+
             var app = builder.Build();
 
             // Hub mapping'leri UseAuthentication'dan ÖNCE değil, SONRA olmalı
@@ -117,13 +119,13 @@ namespace CityDiscovery.AdminNotificationService
             app.UseCors("CorsPolicy");         // 1. CORS
             app.UseAuthentication();           // 2. Authentication
             app.UseAuthorization();            // 3. Authorization
-
+            app.MapHealthChecks("/health"); 
             app.MapControllers();
 
             // Hub mapping'leri — UseAuthorization'dan sonra
             app.MapHub<NotificationHub>("/hubs/notifications");
-            app.MapHub<UserNotificationHub>("/hubs/user-notifications"); 
-
+            app.MapHub<UserNotificationHub>("/hubs/user-notifications");
+            
             app.Run();
         }
     }
