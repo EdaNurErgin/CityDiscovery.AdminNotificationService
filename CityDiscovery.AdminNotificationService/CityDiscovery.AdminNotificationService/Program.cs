@@ -4,6 +4,8 @@ using CityDiscovery.AdminNotificationService.Infrastructure.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using CityDiscovery.AdminNotificationService.API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using CityDiscovery.AdminNotificationService.Infrastructure.Data.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace CityDiscovery.AdminNotificationService
 {
@@ -102,6 +104,21 @@ namespace CityDiscovery.AdminNotificationService
             builder.Services.AddHealthChecks(); 
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var dbContext = services.GetRequiredService<AdminNotificationDbContext>();
+                    dbContext.Database.Migrate();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while migrating the social database.");
+                }
+            }
 
             // Hub mapping'leri UseAuthentication'dan ÖNCE değil, SONRA olmalı
             if (app.Environment.IsDevelopment())
